@@ -1,0 +1,87 @@
+#!/bin/bash
+
+# fail on first error
+set -e
+
+# constant variables
+NOTES_DIR=$HOME/.notes
+NOTES_FILE=notes
+NOTES_PATH="$NOTES_DIR"/"$NOTES_FILE"
+TEMP_FILE="$NOTES_DIR"/temp
+
+#if the notes directory does not exist, create it
+if [ ! -d "$NOTES_DIR" ]
+then
+  mkdir "$NOTES_DIR"
+fi
+
+# if the notes file does not exist, create it
+if [ ! -w "$NOTES_PATH" ]
+then
+  touch "$NOTES_PATH"
+fi
+
+# if the first argument length is zero
+if [ -z "$1" ]
+then
+  # show the file
+  cat -n "$NOTES_PATH"
+# if the delete command is used
+elif [ "$1" == "del" ]
+# TODO update the script so that when the user enters an integer after del,
+# the script will remove the line without prompting the user further
+# TODO prompt the user prior to removing the line
+# TODO make functions to make the code more readable
+then
+  # show the note file with line numbers
+  cat -n "$NOTES_PATH"
+  # ask the user for the line number to delete
+  echo -n "Please select a line to delete: "
+  read -r line
+
+  # declare variables based on the notes file
+  declare -i COUNT
+  COUNT=$(wc -l "$NOTES_PATH" | cut -f 1 -d " ")
+  declare -i HEAD=$(("$line" - 1))
+  declare -i TAIL=$(("$COUNT" - "$line"))
+
+  # check if the user input is and integer and greater than zero
+  # and less than the number of lines in the file
+  if [ "$line" -eq "$line" ] 2>/dev/null && [ "$line" -gt 0 ] && [ "$line" -le "$COUNT" ] 
+  then
+    # if first line is to be deleted
+    if [ "$line" -eq 1 ]
+    then
+       tail -n "$TAIL" "$NOTES_PATH" > "$TEMP_FILE"
+    # if last line is to be deleted
+    elif [ "$line" -eq "$COUNT" ]
+    then 
+      head -n "$HEAD" "$NOTES_PATH" > "$TEMP_FILE"
+    # if any other line is to be deleted
+    else
+      head -n "$HEAD" "$NOTES_PATH" > "$TEMP_FILE"
+      tail -n "$TAIL" "$NOTES_PATH" >> "$TEMP_FILE"
+    fi
+  else
+    echo "Not an integer"
+    exit 2
+  fi
+  
+  # show the temporary file
+  cat -n "$TEMP_FILE"
+  # copy tempfile over notes
+  cp "$TEMP_FILE" "$NOTES_PATH"
+elif [ "$1" == "new" ]
+  then
+    # declare an array
+    declare -a OUT_LINE
+    # create an array, iterate through the arguments,
+    # except the first, adding them to the array.
+    # Then copy the array to the file
+    for item in "${@:2}"
+    do
+      OUT_LINE+=("$item")
+    done
+    echo "${OUT_LINE[@]}" >> "$NOTES_PATH"
+    cat -n "$NOTES_PATH"
+fi
