@@ -8,69 +8,102 @@ NOTES_DIR=$HOME/.notes
 NOTES_FILE=notes
 NOTES_PATH="$NOTES_DIR"/"$NOTES_FILE"
 TEMP_FILE="$NOTES_DIR"/temp
+declare -i count
+declare -i heads
+declare -i tails
 
-#if the notes directory does not exist, create it
-if [ ! -d "$NOTES_DIR" ]
-then
-  mkdir "$NOTES_DIR"
-fi
+_check_dirs_files()
+{
+  if ! [ -d "$NOTES_DIR" ]
+  then
+    mkdir "$NOTES_DIR"
+  fi
 
-# if the notes file does not exist, create it
-if [ ! -w "$NOTES_PATH" ]
-then
-  touch "$NOTES_PATH"
-fi
+  if ! [ -w "$NOTES_PATH" ]
+  then
+    touch "$NOTES_PATH"
+  fi
+}
 
-# if the first argument length is zero
+_show_file()
+{
+  tput clear
+  cat -n "$1"
+}
+
+_set_del_vars()
+{
+  # declare variables based on the notes file
+  count=$(wc -l "$NOTES_PATH" | cut -f 1 -d " ")
+  heads=$(("$1" - 1))
+  # declare -i tails=$(("$COUNT" - "$line"))
+  tails=$(("$count" - "$1"))
+}
+
+_delete_line()
+{
+  if [ "$1" -eq 1 ]
+  then
+    tput clear
+     tail -n "$tails" "$NOTES_PATH" > "$TEMP_FILE"
+  # if last line is to be deleted
+  elif [ "$1" -eq "$count" ]
+  then 
+    tput clear
+    head -n "$heads" "$NOTES_PATH" > "$TEMP_FILE"
+  # if any other line is to be deleted
+  else
+    tput clear
+    head -n "$heads" "$NOTES_PATH" > "$TEMP_FILE"
+    tail -n "$tails" "$NOTES_PATH" >> "$TEMP_FILE"
+  fi
+  # show the temporary file
+  _show_file "$TEMP_FILE"
+  # copy tempfile over notes
+  cp "$TEMP_FILE" "$NOTES_PATH"
+}
+
+# check the dirs and files needed by the script
+_check_dirs_files
+
+# if the first argument length is zero (no first argument)
 if [ -z "$1" ]
 then
   # show the file
-  cat -n "$NOTES_PATH"
+  _show_file "$NOTES_PATH"
 # if the delete command is used
 elif [ "$1" == "del" ]
-# TODO update the script so that when the user enters an integer after del,
-# the script will remove the line without prompting the user further
-# TODO prompt the user prior to removing the line
-# TODO make functions to make the code more readable
 then
+  # delete using an argument to the del option ---------------------------
+  if [ "$2" -eq "$2" ]
+  then
+    _set_del_vars "$2" 
+    _delete_line "$2"
+    exit 0
+  fi
+  # and exit when done --------------------------------------------------- 
+  
+  # delete a note based on user input ------------------------------------
   # show the note file with line numbers
-  cat -n "$NOTES_PATH"
-  # ask the user for the line number to delete
+  _show_file "$NOTES_PATH"
+  echo
   echo -n "Please select a line to delete: "
   read -r line
 
-  # declare variables based on the notes file
-  declare -i COUNT
-  COUNT=$(wc -l "$NOTES_PATH" | cut -f 1 -d " ")
-  declare -i HEAD=$(("$line" - 1))
-  declare -i TAIL=$(("$COUNT" - "$line"))
-
+  _set_del_vars $line
   # check if the user input is and integer and greater than zero
   # and less than the number of lines in the file
-  if [ "$line" -eq "$line" ] 2>/dev/null && [ "$line" -gt 0 ] && [ "$line" -le "$COUNT" ] 
+  if [ "$line" -eq "$line" ] 2>/dev/null && [ "$line" -gt 0 ] && [ "$line" -le "$count" ] 
   then
-    # if first line is to be deleted
-    if [ "$line" -eq 1 ]
-    then
-       tail -n "$TAIL" "$NOTES_PATH" > "$TEMP_FILE"
-    # if last line is to be deleted
-    elif [ "$line" -eq "$COUNT" ]
-    then 
-      head -n "$HEAD" "$NOTES_PATH" > "$TEMP_FILE"
-    # if any other line is to be deleted
-    else
-      head -n "$HEAD" "$NOTES_PATH" > "$TEMP_FILE"
-      tail -n "$TAIL" "$NOTES_PATH" >> "$TEMP_FILE"
-    fi
+    _delete_line "$line"
+    _show_file "$NOTES_PATH"
+    exit 0
+  # print an error and exit when done ------------------------------------
   else
     echo "Not an integer"
     exit 2
   fi
-  
-  # show the temporary file
-  cat -n "$TEMP_FILE"
-  # copy tempfile over notes
-  cp "$TEMP_FILE" "$NOTES_PATH"
+# new note ---------------------------------------------------------------
 elif [ "$1" == "new" ]
   then
     # declare an array
@@ -82,6 +115,9 @@ elif [ "$1" == "new" ]
     do
       OUT_LINE+=("$item")
     done
+    # output the file
     echo "${OUT_LINE[@]}" >> "$NOTES_PATH"
-    cat -n "$NOTES_PATH"
+    _show_file "$NOTES_PATH"
+    exit 0
 fi
+# and exit ---------------------------------------------------------------
