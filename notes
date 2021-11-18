@@ -1,0 +1,11 @@
+add README to cmd-note repo
+figure out bug in zk-shell. The README.md file needs a double space at the end of each line to add a markdown new line.
+add the option to switch files that notes are written to in the notes script
+clear rubbish from b room
+wash dishes
+vacuumn front room
+in the notes script, add an option to edit a note
+research shell variables, see if a default value can be set
+18-11-2021 cat litter
+18-11-2021 investigate the split command
+18-11-2021 push zk after an error in read function

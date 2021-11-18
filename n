@@ -10,27 +10,7 @@ NOTES_FILE=notes
 NOTES_PATH="$NOTES_DIR"/"$NOTES_FILE"
 TEMP_FILE="$NOTES_DIR"/temp
 declare -i count
-declare -i heads
-declare -i tails
 note_date=$(date +%d-%m-%Y)
-
-#_set_note_file()
-#{
-#  if [ -z "" ]
-#  then
-#    # code to set the notes file
-#    # message to user
-#    # set the path to the notes file
-#  fi
-#}
-
-#_get_note_files()
-#{
-#  if [ -z "" ]
-#  then
-#  #code to list available notes files
-#  fi
-#}
 
 _check_dirs_files()
 {
@@ -51,81 +31,58 @@ _show_file()
   cat -n "$1"
 }
 
-_set_del_vars()
+_get_num_lines()
 {
   # declare variables based on the notes file
+  declare -i count
   count=$(wc -l "$NOTES_PATH" | cut -f 1 -d " ")
-  heads=$(("$1" - 1))
-  # declare -i tails=$(("$COUNT" - "$line"))
-  tails=$(("$count" - "$1"))
+  return "$count"
 }
 
 _delete_line()
 {
-  if [ "$1" -eq 1 ]
-  then
-    tput clear
-     tail -n "$tails" "$NOTES_PATH" > "$TEMP_FILE"
-  # if last line is to be deleted
-  elif [ "$1" -eq "$count" ]
-  then 
-    tput clear
-    head -n "$heads" "$NOTES_PATH" > "$TEMP_FILE"
-  # if any other line is to be deleted
-  else
-    tput clear
-    head -n "$heads" "$NOTES_PATH" > "$TEMP_FILE"
-    tail -n "$tails" "$NOTES_PATH" >> "$TEMP_FILE"
-  fi
-  # show the temporary file
-  _show_file "$TEMP_FILE"
-  # copy tempfile over notes
+  head -n $(("$1" - 1 )) "$NOTES_PATH" > "$TEMP_FILE"
+  tail -n +$(("$1" + 1)) "$NOTES_PATH" >> "$TEMP_FILE"
   cp "$TEMP_FILE" "$NOTES_PATH"
+  _show_file "$NOTES_PATH"
 }
+
+#_get_line()
+#{
+#  declare -i num=$1
+#  req_line=$(head -n "$num" "$NOTES_PATH" | tail -n +"$num")
+#}
 
 # check the dirs and files needed by the script
 _check_dirs_files
 
+# default, show a list of the notes --------------------------------------
 # if the first argument length is zero (no first argument)
 if [ -z "$1" ]
 then
   # show the file
   _show_file "$NOTES_PATH"
-# if the delete command is used
-elif [ "$1" == "del" ]
-then
-  # delete using an argument to the del option ---------------------------
-  if [ "$2" -eq "$2" ]
-  then
-    _set_del_vars "$2" 
-    _delete_line "$2"
-    exit 0
-  fi
-  # and exit when done --------------------------------------------------- 
-  
-  # delete a note based on user input ------------------------------------
-  # show the note file with line numbers
-  _show_file "$NOTES_PATH"
-  # get input from the user
-  echo
-  echo -n "Please select a line to delete: "
-  read -r line
+  exit 0
+fi
+# ------------------------------------------------------------------------
 
-  _set_del_vars "$line"
-  # check if the user input is and integer and greater than zero
-  # and less than the number of lines in the file
-  if [ "$line" -eq "$line" ] 2>/dev/null && [ "$line" -gt 0 ] && [ "$line" -le "$count" ] 
+# if the delete command is used
+if [ "$1" == "del" ]
+then
+  # delete using an argument to the del option
+  # check if the argument is an integer
+  if  [ -n "$2" ] && [ "$2" -eq "$2" ] && [ "$2" -gt 0 ] 
   then
-    _delete_line "$line"
-    _show_file "$NOTES_PATH"
+    _delete_line "$2"
+  # and exit when done 
     exit 0
-  # print an error and exit when done ------------------------------------
   else
-    echo "User input error, please input a line number"
     exit 2
   fi
+fi
+
 # new note ---------------------------------------------------------------
-elif [ "$1" == "new" ]
+if [ "$1" == "new" ]
   then
     # declare an array
     declare -a out_line
@@ -140,12 +97,17 @@ elif [ "$1" == "new" ]
     echo "$note_date" "${out_line[@]}" >> "$NOTES_PATH"
     _show_file "$NOTES_PATH"
     exit 0
-  # and exit ---------------------------------------------------------------
-  #elif [ "$1" == "swap" ]
-  # change the name of the notes file
-  #then
-  #  echo "Swapping notes file from $NOTES_FILE to $2"
-  #  export NOTES_FILE="$1"
-  #  exit 0
-  # and exit ----------------------------------------------------------------
 fi
+
+# edit note ---------------------------------------------------------------
+#if [ "$1" == "edit" ]
+# then
+#  # get new input from the user
+#  _get_line "$2"
+#  echo "Editing line $2 : $req_line."
+#  echo "Please enter replacement line"
+#  read -r new_line
+#  echo The new line, $2, is : "$note_date" "$new_line"
+#  # make a temp file with the new line inserted
+#  _set_file_vars
+#fi
