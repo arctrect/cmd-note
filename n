@@ -5,12 +5,32 @@ set -e
 
 # constant variables
 NOTES_DIR=$HOME/.notes
+# export NOTES_FILE=notes
 NOTES_FILE=notes
 NOTES_PATH="$NOTES_DIR"/"$NOTES_FILE"
 TEMP_FILE="$NOTES_DIR"/temp
 declare -i count
 declare -i heads
 declare -i tails
+note_date=$(date +%d-%m-%Y)
+
+#_set_note_file()
+#{
+#  if [ -z "" ]
+#  then
+#    # code to set the notes file
+#    # message to user
+#    # set the path to the notes file
+#  fi
+#}
+
+#_get_note_files()
+#{
+#  if [ -z "" ]
+#  then
+#  #code to list available notes files
+#  fi
+#}
 
 _check_dirs_files()
 {
@@ -86,11 +106,12 @@ then
   # delete a note based on user input ------------------------------------
   # show the note file with line numbers
   _show_file "$NOTES_PATH"
+  # get input from the user
   echo
   echo -n "Please select a line to delete: "
   read -r line
 
-  _set_del_vars $line
+  _set_del_vars "$line"
   # check if the user input is and integer and greater than zero
   # and less than the number of lines in the file
   if [ "$line" -eq "$line" ] 2>/dev/null && [ "$line" -gt 0 ] && [ "$line" -le "$count" ] 
@@ -100,24 +121,31 @@ then
     exit 0
   # print an error and exit when done ------------------------------------
   else
-    echo "Not an integer"
+    echo "User input error, please input a line number"
     exit 2
   fi
 # new note ---------------------------------------------------------------
 elif [ "$1" == "new" ]
   then
     # declare an array
-    declare -a OUT_LINE
+    declare -a out_line
     # create an array, iterate through the arguments,
     # except the first, adding them to the array.
     # Then copy the array to the file
     for item in "${@:2}"
     do
-      OUT_LINE+=("$item")
+      out_line+=("$item")
     done
     # output the file
-    echo "${OUT_LINE[@]}" >> "$NOTES_PATH"
+    echo "$note_date" "${out_line[@]}" >> "$NOTES_PATH"
     _show_file "$NOTES_PATH"
     exit 0
+  # and exit ---------------------------------------------------------------
+  #elif [ "$1" == "swap" ]
+  # change the name of the notes file
+  #then
+  #  echo "Swapping notes file from $NOTES_FILE to $2"
+  #  export NOTES_FILE="$1"
+  #  exit 0
+  # and exit ----------------------------------------------------------------
 fi
-# and exit ---------------------------------------------------------------
