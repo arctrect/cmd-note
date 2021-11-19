@@ -18,5 +18,5 @@ Deletes the note at [line number]
 
 ## Directories
 
-The notes are stored in a file ,`notes` in a hidden directory in the users
-`home` directory.
+The notes are stored in a file ,`notes` in a hidden directory, `~/.notes` in the
+users `home` directory.
