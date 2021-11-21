@@ -36,7 +36,6 @@ _get_num_lines()
   # declare variables based on the notes file
   declare -i count
   count=$(wc -l "$NOTES_PATH" | cut -f 1 -d " ")
-  return "$count"
 }
 
 _delete_line()
@@ -99,6 +98,80 @@ if [ "$1" == "new" ]
     exit 0
 fi
 
+# n ins 1 note here
+if [ "$1" == "ins" ]
+  then
+    # declare variable
+    declare -i ins_line
+    declare -i not_line
+    declare -a ins_note
+    #set line to insert
+    ins_line="$2"
+    # set the not_line
+    _get_num_lines
+    not_line=$(wc -l "$NOTES_PATH" | cut -f 1 -d " ")
+
+    # populate note array
+    for item in "${@:3}"
+    do
+      ins_note+=("$item")
+    done
+
+    # check ins_line is an int
+    if  [ ! "$ins_line" -eq "$ins_line" ] || [ "$ins_line" -lt 1 ] || [ "$ins_line" -gt $(("$not_line" + 1)) ]
+      then
+        #echo "$ins_line" is not a valid line number
+        exit 2
+    fi
+
+    #test echo
+    echo integer test passed
+    echo "$ins_line" "${ins_note[@]}"
+    # output files
+    head -qn $(( "$ins_line" - 1 )) "$NOTES_PATH" > $TEMP_FILE
+    echo "$note_date" "${ins_note[@]}" >> $TEMP_FILE
+    tail -qn +"$ins_line" "$NOTES_PATH" >> $TEMP_FILE
+
+    # cat the file
+    tput clear
+    cat -n $TEMP_FILE
+    
+    echo
+    echo -n "Is this correct ? "
+    read
+    
+    if [ "$REPLY" == "y" ]
+    then
+      cp $TEMP_FILE $NOTES_PATH
+      tput clear
+      cat -n $NOTES_PATH
+    fi
+fi
+
+# pseudo code for insert command -----------------------------------------------
+# insert a note at a specific point in the file
+# command will be called ins
+# 
+# 1. Get info from user *
+#   1.1 Get line number and note from user *
+#     1.1.1 Store line number in variable, (int) *
+#   1.2 Get note *
+#     1.2.1 Store not in a variable, (array) *
+#   1.3 Check line number is valid *
+#     1.3.1 Get number of lines in the file and store (int) *
+#     1.3.2 Check line number an int *
+#     1.3.4 Check inputted number is not less than 1 *
+#     1.3.5 Check line number is not greater the number of existing lines + 1 *
+# 2. Insert the line to the file
+#   2.1 Copy the part of the file above the note to a temp file
+#   2.2 Append the line from the user to the end of the temp file
+#   2.3 Copy lines, including original line number, to the temp file
+#   2.4 Show temp file to user
+#   2.5 Ask user if this is ok
+#     2.6.1 If ok copy temp file to notes file
+#     2.6.2 If not quit
+# 4. Show the result 
+# ------------------------------------------------------------------------------
 # edit note ---------------------------------------------------------------
 #if [ "$1" == "edit" ]
 # then

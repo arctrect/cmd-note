@@ -16,6 +16,10 @@ Adds a new note to the bottom of the list of notes
 
 Deletes the note at [line number]
 
+## `n ins [line number]` - insers a note
+
+insert a new note at line number
+
 ## Directories
 
 The notes are stored in a file ,`notes` in a hidden directory, `~/.notes` in the
