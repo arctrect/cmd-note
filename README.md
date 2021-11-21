@@ -16,8 +16,7 @@ Adds a new note to the bottom of the list of notes
 
 Deletes the note at [line number]
 
-## `n ins [line number]` - insert a
-note
+## `n ins [line number]` - insert a note
 
 insert a new note at line number
 
