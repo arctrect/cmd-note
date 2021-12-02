@@ -3,12 +3,12 @@
 # fail on first error
 set -e
 
-# constant variables
+# variables
 NOTES_DIR=$HOME/.notes
-# export NOTES_FILE=notes
-NOTES_FILE=notes
+NOTES_FILE=$(< $HOME/.notes/notes.rc);
 NOTES_PATH="$NOTES_DIR"/"$NOTES_FILE"
 TEMP_FILE="$NOTES_DIR"/temp
+RC_FILE="$NOTES_DIR"/notes.rc
 declare -i count
 note_date=$(date +%d-%m-%Y)
 
@@ -28,6 +28,8 @@ _check_dirs_files()
 _show_file()
 {
   tput clear
+  echo "$NOTES_FILE"
+  echo
   cat -n "$1"
 }
 
@@ -148,7 +150,22 @@ if [ "$1" == "ins" ]
     fi
 fi
 
-# pseudo code for insert command -----------------------------------------------
+if [ "$1" == "file" ]
+then
+  echo "$2" > "$RC_FILE"
+fi
+
+# pseudo code for file command ------------------------------------------
+# 1. overwrite the contents of the notes.rc file to be the name of the
+#    new note file (note set a variable that holds the path to notes.rc)
+# 2. set the variable that holds the notes file name to the new note file
+# 3. Create the new notes file if it does not exist.
+
+# Note, at the start of the script set the NOTES_FILE variable to the 
+# contents of the script
+# -----------------------------------------------------------------------
+#
+# pseudo code for insert command ---------------------------------------- 
 # insert a note at a specific point in the file
 # command will be called ins
 # 
