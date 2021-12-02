@@ -3,6 +3,11 @@
 The script 'n' is designed to take quick, one line notes and store them locally,
 and show a list of these notes.  
 
+The script requires the following files in the home directory:  
+
++ `$HOME/.notes/notes.rc` the line contains the name of the current notes file.
++ `$HOME/.notes/temp` a temporary file used by the script 
+
 ## `n` - Default behaviour
 
 Using `n` without any options will display a list of saved notes preceded
@@ -19,6 +24,8 @@ Deletes the note at [line number]
 ## `n ins [line number]` - insert a note
 
 insert a new note at line number
+
+## `n file [file name]` - change your current notes file 
 
 ## Directories
 
