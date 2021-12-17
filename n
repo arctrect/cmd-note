@@ -5,8 +5,6 @@ set -e
 
 # variables
 NOTES_DIR=$HOME/.notes
-NOTES_FILE=$(< $HOME/.notes/notes.rc);
-NOTES_PATH="$NOTES_DIR"/"$NOTES_FILE"
 TEMP_FILE="$NOTES_DIR"/temp
 RC_FILE="$NOTES_DIR"/notes.rc
 declare -i count
@@ -14,21 +12,40 @@ note_date=$(date +%d-%m-%Y)
 
 _check_dirs_files()
 {
+  # check that the notes direcory exists and create it if it does not
   if ! [ -d "$NOTES_DIR" ]
   then
     mkdir "$NOTES_DIR"
   fi
 
+  # check that the notes.rc file exists and create it if it does not. Add
+  # the name of the default note file to the notes.rc file
+  if  ! [[ -f "$RC_FILE" ]]
+  then
+    touch "$RC_FILE"
+    echo "notes" > "$RC_FILE"
+    NOTES_FILE=$(< "$RC_FILE") 
+  else
+    # set the name of the notes file to the name present in the notes.rc
+    # file
+    NOTES_FILE=$(< "$RC_FILE") 
+  fi
+
+  # set the path to the notes file
+  NOTES_PATH="$NOTES_DIR"/"$NOTES_FILE"
+  
+  # check that the notes file exists and create it if it does not
   if ! [ -w "$NOTES_PATH" ]
   then
     touch "$NOTES_PATH"
+    echo "$NOTES_PATH"
   fi
 }
 
 _show_file()
 {
-  tput clear
-  echo "$NOTES_FILE"
+  #tput clear
+  _show_current_notes_file
   echo
   cat -n "$1"
 }
@@ -48,8 +65,15 @@ _delete_line()
   _show_file "$NOTES_PATH"
 }
 
+_show_current_notes_file()
+{
+  echo Current notes file : "$(< $RC_FILE)"
+}
+
+# TODO function to check for a valid integer within a range
+
 #_get_line()
-#{
+# {
 #  declare -i num=$1
 #  req_line=$(head -n "$num" "$NOTES_PATH" | tail -n +"$num")
 #}
@@ -100,11 +124,11 @@ if [ "$1" == "new" ]
     exit 0
 fi
 
-# n ins 1 note here
+# insert note -----------------------------------------------------------
 if [ "$1" == "ins" ]
   then
     # declare variable
-    declare -i ins_line
+    declare -i ins_line_num
     declare -i not_line
     declare -a ins_note
     #set line to insert
@@ -120,46 +144,53 @@ if [ "$1" == "ins" ]
     done
 
     # check ins_line is an int
-    if  [ ! "$ins_line" -eq "$ins_line" ] || [ "$ins_line" -lt 1 ] || [ "$ins_line" -gt $(("$not_line" + 1)) ]
+    if  [ ! "$ins_line_num" -eq "$ins_line_num" ] || [ "$ins_line_num" -lt 1 ] || [ "$ins_line_num" -gt $(("$not_line" + 1)) ]
       then
-        #echo "$ins_line" is not a valid line number
+        echo "$ins_line" is not a valid line number
         exit 2
     fi
 
-    #test echo
-    echo integer test passed
     echo "$ins_line" "${ins_note[@]}"
-    # output files
-    head -qn $(( "$ins_line" - 1 )) "$NOTES_PATH" > $TEMP_FILE
-    echo "$note_date" "${ins_note[@]}" >> $TEMP_FILE
-    tail -qn +"$ins_line" "$NOTES_PATH" >> $TEMP_FILE
+
+    # output to temp file
+    head -qn $(( "$ins_line" - 1 )) "$NOTES_PATH" > "$TEMP_FILE"
+    echo "$note_date" "${ins_note[@]}" >> "$TEMP_FILE"
+    tail -qn +"$ins_line" "$NOTES_PATH" >> "$TEMP_FILE"
 
     # cat the file
     tput clear
-    cat -n $TEMP_FILE
+    cat -n "$TEMP_FILE"
     
     echo
     echo -n "Is this correct ? "
-    read
+    read -r
     
     if [ "$REPLY" == "y" ]
     then
-      cp $TEMP_FILE $NOTES_PATH
+      cp "$TEMP_FILE" "$NOTES_PATH"
       tput clear
-      cat -n $NOTES_PATH
+      cat -n "$NOTES_PATH"
     fi
 fi
+
 
 if [ "$1" == "file" ]
 then
   echo "$2" > "$RC_FILE"
+  echo "$(<"$RC_FILE")" is now the notes file
 fi
 
 # pseudo code for file command ------------------------------------------
+# check that the input is correct format n [file] [new note file]
 # 1. overwrite the contents of the notes.rc file to be the name of the
 #    new note file (note set a variable that holds the path to notes.rc)
 # 2. set the variable that holds the notes file name to the new note file
 # 3. Create the new notes file if it does not exist.
+
+# psuedo code for list command ------------------------------------------
+# The list command will list the available notes files
+# 1. get the 
+
 
 # Note, at the start of the script set the NOTES_FILE variable to the 
 # contents of the script
