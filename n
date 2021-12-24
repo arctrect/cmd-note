@@ -44,7 +44,7 @@ _check_dirs_files()
 
 _show_file()
 {
-  #tput clear
+  tput clear
   _show_current_notes_file
   echo
   cat -n "$1"
@@ -119,7 +119,7 @@ if [ "$1" == "new" ]
       out_line+=("$item")
     done
     # output the file
-    echo "$note_date" "${out_line[@]}" >> "$NOTES_PATH"
+    echo "${out_line[@]}" >> "$NOTES_PATH"
     _show_file "$NOTES_PATH"
     exit 0
 fi
